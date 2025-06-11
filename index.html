@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDV趨勢分析 - 最新版プレゼンテーション</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            // ROI Chart - Based on Deloitte 2024 SDV Global Manufacturer Readiness Study
+            const roiCtx = document.getElementById('roiChart');
+            if (roiCtx && roiCtx.getContext) {
+                try {
+                    new Chart(roiCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['5年以内', '6-10年', '10年以上', '不明'],
+                            datasets: [{
+                                label: '企業回答割合（%）',
+                                data: [43, 47, 7, 3],
+                                backgroundColor: ['#48bb78', '#ed8936', '#f56565', '#a0aec0'],
+                                borderRadius: 4,
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    enabled: true,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.parsed.y + '%';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 50,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value + '%';
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: '企業回答割合（%）'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'ROI実現期間'
+                                    }
+                                }
+                            },
+                            layout: {
+                                padding: {
+                                    top: 20,
+                                    bottom: 20
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('ROI Chart initialization failed:', e);
+                }
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Noto Sans JP', sans-serif;
+            background: #f8fafc;
+            color: #2d3748;
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .presentation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .slide {
+            min-height: 100vh;
+            padding: 60px 40px;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            background: white;
+            margin-bottom: 2px;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        .slide-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .slide-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #1a202c;
+            margin-bottom: 20px;
+            letter-spacing: -0.025em;
+        }
+
+        .slide-subtitle {
+            font-size: 1.2rem;
+            color: #718096;
+            font-weight: 400;
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 0.9rem;
+            color: #a0aec0;
+            font-weight: 500;
+        }
+
+        /* Title Slide */
+        .title-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .title-slide .slide-title {
+            font-size: 3.5rem;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .title-slide .slide-subtitle {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+        }
+
+        .title-slide .date {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.8);
+            margin-top: 40px;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            align-items: start;
+        }
+
+        .content-card {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .card-description {
+            font-size: 0.95rem;
+            color: #718096;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin: 30px 0;
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 30px;
+            align-items: flex-start;
+        }
+
+        .timeline-year {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+            margin-right: 20px;
+            font-size: 0.9rem;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .timeline-description {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        /* Company Grid */
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .company-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .company-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
+        }
+
+        .company-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .company-description {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        /* Progress Indicator */
+        .progress-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .progress-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 20px 0;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 6px;
+            transition: width 2s ease-in-out;
+        }
+
+        .progress-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 10px;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .nav-button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Slide Indicator */
+        .slide-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-dot.active {
+            background: #667eea;
+            transform: scale(1.2);
+        }
+
+        /* Key Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 25px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        /* Regional Cards */
+        .regional-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .regional-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 25px;
+            position: relative;
+        }
+
+        .regional-card.asia {
+            border-left: 4px solid #f56565;
+        }
+
+        .regional-card.america {
+            border-left: 4px solid #48bb78;
+        }
+
+        .regional-card.europe {
+            border-left: 4px solid #4299e1;
+        }
+
+        .regional-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .regional-points {
+            list-style: none;
+            padding: 0;
+        }
+
+        .regional-points li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        .regional-points li:before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* Challenge Cards */
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .challenge-card {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .challenge-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #c53030;
+            margin-bottom: 12px;
+        }
+
+        .challenge-description {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 40px 20px;
+                overflow: hidden;
+            }
+            
+            .slide-title {
+                font-size: 2rem;
+            }
+            
+            .title-slide .slide-title {
+                font-size: 2.5rem;
+            }
+            
+            .two-column {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .navigation {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide title-slide active" data-slide="1">
+            <h1 class="slide-title">SDV趨勢分析v2</h1>
+            <p class="slide-subtitle">モビリティDX戦略2025アップデート対応</p>
+            <p class="date">2025年6月</p>
+            <div style="margin-top: 60px; font-size: 1rem; color: rgba(255,255,255,0.7); text-align: center;">
+                <p>Prepared by Jin Yoshino</p>
+                <p style="margin-top: 10px;">Generated with AI assistance</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Market Overview -->
+        <div class="slide" data-slide="2">
+            <div class="slide-number">2</div>
+            <div class="slide-header">
+                <h2 class="slide-title">SDV市場規模とモビリティDX戦略目標</h2>
+            </div>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3 class="card-title">2030年SDV市場規模</h3>
+                    <div class="card-value">$1.24兆</div>
+                    <p class="card-description">グローバル市場予測<br>（政府戦略資料より）</p>
+                </div>
+                <div class="content-card">
+                    <h3 class="card-title">日系シェア目標</h3>
+                    <div class="card-value">30%</div>
+                    <p class="card-description">2030年・2035年<br>モビリティDX戦略目標</p>
+                </div>
+                <div class="content-card">
+                    <h3 class="card-title">2030年販売台数</h3>
+                    <div class="card-value">3,500万台</div>
+                    <p class="card-description">SDVグローバル販売目標<br>（日系30%=1,100万台）</p>
+                </div>
+                <div class="content-card">
+                    <h3 class="card-title">技術進展加速</h3>
+                    <div class="card-value">34%</div>
+                    <p class="card-description">年平均成長率<br>AI・E2E技術により加速</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">SDV市場成長予測と日系シェア目標</div>
+                <canvas id="marketGrowthChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 3: AI Technology Evolution -->
+        <div class="slide" data-slide="3">
+            <div class="slide-number">3</div>
+            <div class="slide-header">
+                <h2 class="slide-title">自動運転AI技術の進化と競争激化</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">E2E AI技術の台頭</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">Tesla FSD E2E AI</h4>
+                        <p style="color: #718096; margin: 10px 0;">2024年秋実装開始</p>
+                        <div class="card-value" style="font-size: 1.8rem;">高精度</div>
+                        <p class="card-description">米国内で非常に高い精度実現</p>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">中国HUAWEIの進展</h4>
+                        <p style="color: #718096; font-size: 0.9rem;">ADS 4.0システム<br>BYD、長安汽車等に供給拡大</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">日本の対応状況</h3>
+                    <div class="stats-grid" style="grid-template-columns: 1fr;">
+                        <div class="stat-item">
+                            <div class="stat-number">5.1万人</div>
+                            <div class="stat-label">ソフトウェア人材不足<br>（2030年予測）</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">100億ドル</div>
+                            <div class="stat-label">Tesla AI投資額<br>（2024年単年）</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">2,000人</div>
+                            <div class="stat-label">モビリティDXPF参加者<br>（2024年10月設立）</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">自動運転技術アプローチ比較</div>
+                <canvas id="aiTechnologyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 4: Geopolitical Risks -->
+        <div class="slide" data-slide="4">
+            <div class="slide-number">4</div>
+            <div class="slide-header">
+                <h2 class="slide-title">地政学リスクの高まりとSC強靭化</h2>
+            </div>
+            <div class="challenge-grid">
+                <div class="challenge-card">
+                    <h3 class="challenge-title">米国コネクティッドカー規制</h3>
+                    <p class="challenge-description">2025年1月最終規則施行。中国・ロシア関連ハードウェア・ソフトウェアの輸入・販売禁止。2027年（SW）・2030年（HW）から段階適用</p>
+                </div>
+                <div class="challenge-card">
+                    <h3 class="challenge-title">半導体サプライチェーン</h3>
+                    <p class="challenge-description">301条・232条調査開始。レガシー半導体、SiC等に追加関税の可能性。車載用半導体の経済安全保障上の重要性増大</p>
+                </div>
+                <div class="challenge-card">
+                    <h3 class="challenge-title">サイバーセキュリティ強化</h3>
+                    <p class="challenge-description">SDV化でリスク増大。SBOM活用によるSC把握、脆弱性情報共有の仕組み構築が急務。2025年上期にSBOM活用指針策定予定</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">車載半導体市場予測と経済安保リスク</div>
+                <canvas id="semiconductorChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 5: Government Strategy Updates -->
+        <div class="slide" data-slide="5">
+            <div class="slide-number">5</div>
+            <div class="slide-header">
+                <h2 class="slide-title">モビリティDX戦略アップデート内容</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">重点施策の3本柱</h3>
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 15px;">1. 官民協調体制強化</h4>
+                        <p style="opacity: 0.9; font-size: 0.9rem;">AI技術開発・業界協調での体制構築</p>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #48bb78, #38a169); color: white; padding: 25px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 15px;">2. 産業構造構築</h4>
+                        <p style="opacity: 0.9; font-size: 0.9rem;">SDV開発に対応した体制整備</p>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #ed8936, #dd6b20); color: white; padding: 25px; border-radius: 8px;">
+                        <h4 style="margin-bottom: 15px;">3. SC強靭化</h4>
+                        <p style="opacity: 0.9; font-size: 0.9rem;">地政学リスク対応・生産基盤強化</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">具体的取組</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">協調領域の拡大</h4>
+                        <ul style="list-style: none; padding: 0; margin: 15px 0;">
+                            <li style="margin-bottom: 8px; color: #718096;">• 自動運転モデルを支えるAI技術</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• オープンデータセット構築</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• API標準化推進</li>
+                        </ul>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">マイルストーン</h4>
+                        <ul style="list-style: none; padding: 0; margin: 15px 0;">
+                            <li style="margin-bottom: 8px; color: #718096;">• 2025年度: 50か所自動運転実証</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• 2027年度: 100か所以上展開</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• 2030年: 日系シェア30%達成</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Technology Roadmap -->
+        <div class="slide" data-slide="6">
+            <div class="slide-number">6</div>
+            <div class="slide-header">
+                <h2 class="slide-title">技術ロードマップとAI協調体制</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-year">2025</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">オープンデータセット構築</div>
+                                <div class="timeline-description">生成AI基盤モデル活用、令和6年度補正予算事業実施中</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2026</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">業界協調体制確立</div>
+                                <div class="timeline-description">AI自動運転領域での体制構築、今夏までに結論</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2027</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">実装加速</div>
+                                <div class="timeline-description">自動運転サービス100か所以上、API標準化完了</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2030</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">目標達成</div>
+                                <div class="timeline-description">SDV日系グローバルシェア30%実現</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">AI技術開発協調領域</div>
+                    <canvas id="collaborationChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Regional SDV Trends -->
+        <div class="slide" data-slide="7">
+            <div class="slide-number">7</div>
+            <div class="slide-header">
+                <h2 class="slide-title">地域別SDV動向と日系戦略</h2>
+            </div>
+            <div class="regional-grid">
+                <div class="regional-card asia">
+                    <h3 class="regional-title">中国・アジア太平洋</h3>
+                    <ul class="regional-points">
+                        <li>BYD: 2025年全モデルにADAS搭載発表</li>
+                        <li>DeepSeek LLM: 多数OEMが採用</li>
+                        <li>E2E AI自動運転の急速普及</li>
+                        <li>日系もMomenta等と提携加速</li>
+                        <li>2030年SDV比率: 95%予測</li>
+                    </ul>
+                </div>
+                <div class="regional-card america">
+                    <h3 class="regional-title">北米</h3>
+                    <ul class="regional-points">
+                        <li>Tesla E2E FSD本格展開</li>
+                        <li>Waymo累計100億ドル調達</li>
+                        <li>Aurora商用L4トラック開始</li>
+                        <li>コネクティッドカー規制強化</li>
+                        <li>政府調達による需要創出</li>
+                    </ul>
+                </div>
+                <div class="regional-card europe">
+                    <h3 class="regional-title">欧州</h3>
+                    <ul class="regional-points">
+                        <li>2025年3月自動車産業アクションプラン</li>
+                        <li>ホライズン・ヨーロッパ10億ユーロ支援</li>
+                        <li>European Connected Vehicle Alliance設立</li>
+                        <li>中国BEV輸入への関税対策</li>
+                        <li>安全基準・セキュリティ強化</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">地域別SDV普及率予測（2030年）</div>
+                <canvas id="regionalChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 8: Business Model Evolution -->
+        <div class="slide" data-slide="8">
+            <div class="slide-number">8</div>
+            <div class="slide-header">
+                <h2 class="slide-title">ビジネスモデル変革とデータ活用</h2>
+            </div>
+            <div class="two-column">
+                <div class="content-card">
+                    <h3 class="card-title">従来モデル</h3>
+                    <ul style="list-style: none; padding: 0; margin-top: 20px;">
+                        <li style="margin-bottom: 10px; color: #718096;">• 車両販売中心の収益構造</li>
+                        <li style="margin-bottom: 10px; color: #718096;">• ハードウェア差別化</li>
+                        <li style="margin-bottom: 10px; color: #718096;">• 機能固定・長期利用</li>
+                        <li style="margin-bottom: 10px; color: #718096;">• アフターサービス限定</li>
+                    </ul>
+                </div>
+                <div class="content-card" style="border-left-color: #48bb78;">
+                    <h3 class="card-title">SDVモデル</h3>
+                    <ul style="list-style: none; padding: 0; margin-top: 20px;">
+                        <li style="margin-bottom: 10px; color: #718096;">• 継続的価値提供・収益</li>
+                        <li style="margin-bottom: 10px; color: #718096;">• ソフトウェア・サービス中心</li>
+                        <li style="margin-bottom: 10px; color: #718096;">• OTA機能拡張・アップデート</li>
+                        <li style="margin-bottom: 10px; color: #718096;">• データマネタイゼーション</li>
+                    </ul>
+                    <div style="margin-top: 15px; padding: 15px; background: #f0fff4; border-radius: 5px;">
+                        <h5 style="color: #2f855a; margin-bottom: 8px;">実例：Tesla FSD</h5>
+                        <p style="color: #4a5568; font-size: 0.8rem;">年間$200/台のデータ収益ポテンシャル、サブスクリプション19%加入率</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">データ活用による収益構造変化</div>
+                <canvas id="businessModelChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 9: Cybersecurity Challenges -->
+        <div class="slide" data-slide="9">
+            <div class="slide-number">9</div>
+            <div class="slide-header">
+                <h2 class="slide-title">サイバーセキュリティ新次元の課題</h2>
+            </div>
+            <div class="challenge-grid">
+                <div class="challenge-card">
+                    <h3 class="challenge-title">脅威の現状</h3>
+                    <p class="challenge-description">2024年脆弱性報告2,167件、72%がサプライチェーン関連。車両ハイジャック、DoS攻撃等のリスク増大</p>
+                </div>
+                <div class="challenge-card">
+                    <h3 class="challenge-title">SBOM活用推進</h3>
+                    <p class="challenge-description">2025年上期にSBOM活用指針策定、2026年3月改定予定。ウラノス・エコシステム活用でデータ主権担保</p>
+                </div>
+                <div class="challenge-card">
+                    <h3 class="challenge-title">人材育成強化</h3>
+                    <p class="challenge-description">サイバーセキュリティスキル棚卸しシート策定、モビリティDXプラットフォーム活用で人材育成加速</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">サイバーセキュリティ脅威分類（2024年）</div>
+                <canvas id="securityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 10: Industry Structure Transformation -->
+        <div class="slide" data-slide="10">
+            <div class="slide-number">10</div>
+            <div class="slide-header">
+                <h2 class="slide-title">産業構造変革とサプライヤー対応</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">開発プロセス変革</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">要件定義共通ルール化</h4>
+                        <p style="color: #718096; margin: 10px 0;">SDV要件定義手法ガイドライン策定</p>
+                        <ul style="list-style: none; padding: 0; margin: 15px 0;">
+                            <li style="margin-bottom: 8px; color: #718096;">• ハードウェア・ソフトウェア統合</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• サプライヤー手戻り防止</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• 開発スピード向上</li>
+                        </ul>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">中小サプライヤー支援</h4>
+                        <p style="color: #718096; font-size: 0.9rem;">ミカタプロジェクト継続・拡大<br>デジタル化推進強化</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">競争力比較</h3>
+                    <div class="stats-grid" style="grid-template-columns: 1fr;">
+                        <div class="stat-item">
+                            <div class="stat-number">2-3年</div>
+                            <div class="stat-label">中国新興OEM<br>車両開発期間</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">3-4年</div>
+                            <div class="stat-label">日系OEM<br>車両開発期間</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">34%</div>
+                            <div class="stat-label">BYD研究開発投資<br>対前年増加率</div>
+                        </div>
+                    </div>
+                    <div style="background: #fff5f5; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                        <p style="color: #c53030; font-size: 0.9rem; text-align: center;">
+                            <strong>課題:</strong> 開発スピード・投資額で後れ
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Autonomous Driving Implementation -->
+        <div class="slide" data-slide="11">
+            <div class="slide-number">11</div>
+            <div class="slide-header">
+                <h2 class="slide-title">自動運転実装戦略とL4展開</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">実装目標とマイルストーン</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">2025年度目標</h4>
+                        <div class="card-value" style="font-size: 1.8rem;">50か所</div>
+                        <p class="card-description">無人自動運転サービス展開</p>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">2027年度目標</h4>
+                        <div class="card-value" style="font-size: 1.8rem;">100か所</div>
+                        <p class="card-description">サービス展開拡大</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">政府調達活用</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">経済産業省実証</h4>
+                        <p style="color: #718096; margin: 10px 0;">2025年秋 国会定期便</p>
+                        <p style="color: #4a5568; font-size: 0.9rem;">公用車での自動運転導入促進、スタートアップ育成効果も期待</p>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">海外連携事例</h4>
+                        <ul style="list-style: none; padding: 0; margin: 15px 0;">
+                            <li style="margin-bottom: 8px; color: #718096;">• Waymo×日本交通（東京）</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• トヨタ×Waymo戦略提携</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• 日産×Wayve（英国）</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Semiconductor Strategy -->
+        <div class="slide" data-slide="12">
+            <div class="slide-number">12</div>
+            <div class="slide-header">
+                <h2 class="slide-title">半導体戦略と生産基盤強化</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">先端半導体開発</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">ASRA（自動車用先端SoC技術研究組合）</h4>
+                        <p style="color: #718096; margin: 10px 0;">トヨタ・ホンダ・日産等参画</p>
+                        <p style="color: #4a5568; font-size: 0.9rem;">2030年自動運転向け最先端半導体設計開発、ポスト5G基金活用</p>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">パワー半導体強化</h4>
+                        <p style="color: #718096; font-size: 0.9rem;">富士電機・デンソー連携<br>SiCパワー半導体 最大705億円助成</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">レガシー半導体対策</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">SC検討WG再開</h4>
+                        <p style="color: #718096; margin: 10px 0;">自工会・部工会参加</p>
+                        <p style="color: #4a5568; font-size: 0.9rem;">夏頃までにSC課題整理、世代標準化・データPF検討推進</p>
+                    </div>
+                    <div class="stats-grid" style="grid-template-columns: 1fr; margin-top: 20px;">
+                        <div class="stat-item">
+                            <div class="stat-number">1,303億ドル</div>
+                            <div class="stat-label">2030年車載半導体市場</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">13%</div>
+                            <div class="stat-label">車載半導体の全半導体市場占有率</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Data Utilization Strategy -->
+        <div class="slide" data-slide="13">
+            <div class="slide-number">13</div>
+            <div class="slide-header">
+                <h2 class="slide-title">データ利活用戦略と国際連携</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">主要ユースケース</h3>
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #4299e1;">
+                        <h4 style="color: #2b6cb0; margin-bottom: 8px;">自動車LCA</h4>
+                        <p style="color: #4a5568; font-size: 0.9rem;">2025年度より実証開始、海外企業も誘致</p>
+                    </div>
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #48bb78;">
+                        <h4 style="color: #2f855a; margin-bottom: 8px;">SC強靭化</h4>
+                        <p style="color: #4a5568; font-size: 0.9rem;">有事のSC情報管理、車載半導体DPF構築</p>
+                    </div>
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ed8936;">
+                        <h4 style="color: #c05621; margin-bottom: 8px;">物流効率化</h4>
+                        <p style="color: #4a5568; font-size: 0.9rem;">調達物流共同化、2026年度実証目標</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">国際展開</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">AZEC連携</h4>
+                        <p style="color: #718096; margin: 10px 0;">アジア・ゼロエミッション共同体</p>
+                        <p style="color: #4a5568; font-size: 0.9rem;">サプライチェーン全体GHG排出可視化、ASEANとの連携強化</p>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">日泰エネルギー産業対話</h4>
+                        <p style="color: #718096; margin: 10px 0;">2025年4月合意</p>
+                        <p style="color: #4a5568; font-size: 0.9rem;">自動車LCAデータ連携協力、タイとの更なる連携深化</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">データ利活用実証スケジュール</div>
+                <canvas id="dataUtilizationChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 14: Human Resources Strategy -->
+        <div class="slide" data-slide="14">
+            <div class="slide-number">14</div>
+            <div class="slide-header">
+                <h2 class="slide-title">人材戦略とモビリティDXプラットフォーム</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">ソフトウェア人材不足</h3>
+                    <div class="stat-item">
+                        <div class="stat-number">5.1万人</div>
+                        <div class="stat-label">2030年ソフトウェア人材不足予測</div>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">SDVスキル標準</h4>
+                        <p style="color: #718096; margin: 10px 0;">2025年3月策定完了</p>
+                        <ul style="list-style: none; padding: 0; margin: 15px 0;">
+                            <li style="margin-bottom: 8px; color: #718096;">• 31職種のキャリア再定義</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• 企業採用・育成での活用</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• 政府施策での人材像具体化</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">モビリティDXプラットフォーム</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">2024年10月設立</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0;">
+                            <span style="color: #718096;">現在会員数</span>
+                            <span style="font-weight: bold; color: #667eea;">約2,000人</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #718096;">2025年目標</span>
+                            <span style="font-weight: bold; color: #667eea;">5,000人</span>
+                        </div>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">海外人材獲得強化</h4>
+                        <ul style="list-style: none; padding: 0; margin: 15px 0;">
+                            <li style="margin-bottom: 8px; color: #718096;">• インド・ASEAN連携拡大</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• 自動運転AIチャレンジ</li>
+                            <li style="margin-bottom: 8px; color: #718096;">• 学生向け取組強化</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Simulation and Safety -->
+        <div class="slide" data-slide="15">
+            <div class="slide-number">15</div>
+            <div class="slide-header">
+                <h2 class="slide-title">シミュレーション活用と安全性評価</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">認証・認可への活用</h3>
+                    <div class="content-card">
+                        <h4 class="card-title">WP29基準対応</h4>
+                        <p style="color: #718096; margin: 10px 0;">2026年6月までに策定</p>
+                        <p style="color: #4a5568; font-size: 0.9rem;">自動運転国際基準、シミュレーション活用ガイドライン</p>
+                    </div>
+                    <div class="content-card" style="margin-top: 20px;">
+                        <h4 class="card-title">E2E AI評価手法</h4>
+                        <p style="color: #718096; font-size: 0.9rem;">AIベース自動運転の安全性評価<br>グローバル動向注視し検討</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">政府プロジェクト連携</h3>
+                    <div class="stats-grid" style="grid-template-columns: 1fr;">
+                        <div class="stat-item">
+                            <div class="stat-number">SAKURA</div>
+                            <div class="stat-label">シミュレーション環境構築</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">DIVP</div>
+                            <div class="stat-label">ツール精度向上</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">L4PJ</div>
+                            <div class="stat-label">実証走行データ活用</div>
+                        </div>
+                    </div>
+                    <div style="background: #f0fff4; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                        <p style="color: #2f855a; font-size: 0.9rem; text-align: center;">
+                            <strong>目標:</strong> 2026年度までに成果統合
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: International Competition -->
+        <div class="slide" data-slide="16">
+            <div class="slide-number">16</div>
+            <div class="slide-header">
+                <h2 class="slide-title">国際競争環境とポジショニング</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 25px; height: 500px;">
+                <div style="background: linear-gradient(135deg, #f56565, #e53e3e); color: white; padding: 25px; border-radius: 8px;">
+                    <h3 style="margin-bottom: 15px; font-size: 1.2rem;">米国：技術・資本力</h3>
+                    <p style="opacity: 0.9; margin-bottom: 15px; font-size: 0.9rem;">Tesla、Waymo等のAI・自動運転技術リード</p>
+                    <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 5px;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">100億ドル</div>
+                        <div style="font-size: 0.8rem;">Tesla単年AI投資額</div>
+                    </div>
+                </div>
+                <div style="background: linear-gradient(135deg, #ed8936, #dd6b20); color: white; padding: 25px; border-radius: 8px;">
+                    <h3 style="margin-bottom: 15px; font-size: 1.2rem;">中国：開発スピード</h3>
+                    <p style="opacity: 0.9; margin-bottom: 15px; font-size: 0.9rem;">BYD、新興OEMの急速な技術実装</p>
+                    <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 5px;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">2-3年</div>
+                        <div style="font-size: 0.8rem;">車両開発期間</div>
+                    </div>
+                </div>
+                <div style="background: linear-gradient(135deg, #4299e1, #3182ce); color: white; padding: 25px; border-radius: 8px;">
+                    <h3 style="margin-bottom: 15px; font-size: 1.2rem;">欧州：政策・規制</h3>
+                    <p style="opacity: 0.9; margin-bottom: 15px; font-size: 0.9rem;">産業政策とセキュリティ基準の高度化</p>
+                    <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 5px;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">10億€</div>
+                        <div style="font-size: 0.8rem;">3年間SDV支援額</div>
+                    </div>
+                </div>
+                <div style="background: linear-gradient(135deg, #48bb78, #38a169); color: white; padding: 25px; border-radius: 8px;">
+                    <h3 style="margin-bottom: 15px; font-size: 1.2rem;">日本：質・安全性</h3>
+                    <p style="opacity: 0.9; margin-bottom: 15px; font-size: 0.9rem;">モビリティDX戦略による官民協調推進</p>
+                    <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 5px;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">30%</div>
+                        <div style="font-size: 0.8rem;">2030年シェア目標</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Business Challenges -->
+        <div class="slide" data-slide="17">
+            <div class="slide-number">17</div>
+            <div style="text-align: center; margin-bottom: 40px; padding: 25px; background: #fff5f5; border-radius: 8px; border-left: 4px solid #f56565;">
+                <h2 style="color: #c53030; font-size: 1.6rem; margin-bottom: 15px; line-height: 1.4;">SDVは技術革新、ビジネスモデル変化、産業構造再編を同時推進するが</h2>
+                <p style="color: #4a5568; font-size: 1.1rem;">直近ビジネス性が課題視される</p>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">投資規模の課題</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #f56565; font-weight: bold;">•</span>
+                            欧州メーカー：1社平均30億ドル投資
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #f56565; font-weight: bold;">•</span>
+                            R&D予算の約3分の1に相当
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #f56565; font-weight: bold;">•</span>
+                            短期ROI実現の困難性
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">収益化の不確実性</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #f56565; font-weight: bold;">•</span>
+                            サブスクリプション受容性の課題
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #f56565; font-weight: bold;">•</span>
+                            データマネタイゼーションの法的制約
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #f56565; font-weight: bold;">•</span>
+                            競争優位確立の時間軸ギャップ
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="chart-container" style="margin-top: 40px;">
+                <div class="chart-title">SDV投資ROI実現予測（デロイト調査2024年）</div>
+                <canvas id="roiChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 18: Strategic Recommendations -->
+        <div class="slide" data-slide="18">
+            <div class="slide-number">18</div>
+            <div class="slide-header">
+                <h2 class="slide-title">戦略提言：勝ち筋の実現に向けて</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">短期戦略（～2027年）</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            自動運転AI協調体制の早急な確立
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            オープンデータセット構築と活用
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            SBOM活用によるSC強靭化
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            ソフトウェア人材5.1万人不足解消
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            API標準化とプラットフォーム構築
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            SDVエコシステム形成とサービス基盤確立
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">中長期戦略（2030年～）</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #48bb78; font-weight: bold;">•</span>
+                            SDV日系グローバルシェア30%達成
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #48bb78; font-weight: bold;">•</span>
+                            持続的収益モデル・サービスイノベーション
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #48bb78; font-weight: bold;">•</span>
+                            アジア市場でのデータ連携主導
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #48bb78; font-weight: bold;">•</span>
+                            多様なSDV化による差別化実現
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #48bb78; font-weight: bold;">•</span>
+                            安全性・品質での競争優位確立
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 50px; padding: 40px; background: #f7fafc; border-radius: 8px; border-left: 4px solid #667eea;">
+                <h3 style="color: #2d3748; font-size: 1.4rem; margin-bottom: 15px;">SDVで世界をリードする日本の実現</h3>
+                <p style="color: #718096; font-size: 1.1rem;">官民協調による技術開発・人材確保・産業構造変革</p>
+                <p style="color: #718096; font-size: 1.1rem; margin-top: 10px;">エコシステム形成とサービスイノベーションによる持続的成長</p>
+                <p style="color: #718096; font-size: 1.1rem; margin-top: 10px;">今後3年間が勝負の分かれ目</p>
+            </div>
+        </div>
+
+        <!-- Slide 19: Conclusion -->
+        <div class="slide" data-slide="19">
+            <div class="slide-number">19</div>
+            <div class="slide-header">
+                <h2 class="slide-title">結論</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">重要なポイント</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            市場は急速拡大：2024年$2,135億 → 2030年$1.24兆
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            日本は2030年・2035年で世界シェア30%を目標
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            企業間協業が加速：トヨタ×NTT、日産×ホンダ等
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            技術革新：E/Eアーキテクチャ進化とOTA実装
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                            ビジネスモデル変革：継続的価値提供への移行
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color: #2d3748; margin-bottom: 20px; font-size: 1.3rem;">今後の展望</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #48bb78; font-weight: bold;">•</span>
+                            2025年以降本格普及期に突入
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #48bb78; font-weight: bold;">•</span>
+                            サイバーセキュリティ対策が重要課題
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #48bb78; font-weight: bold;">•</span>
+                            産業構造的協業が成功の鍵
+                        </li>
+                        <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #4a5568;">
+                            <span style="position: absolute; left: 0; color: #48bb78; font-weight: bold;">•</span>
+                            自動車産業競争力を左右する決定的要因
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 50px; padding: 40px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 8px;">
+                <h3 style="font-size: 1.4rem; margin-bottom: 15px;">SDVは移動の概念を再定義</h3>
+                <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 10px;">自動車メーカーは「移動体験のキュレーター」へ変貌</p>
+                <p style="font-size: 1.1rem; opacity: 0.9;">今後5年間が産業構造転換の分水嶺</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">前へ</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">次へ</button>
+    </div>
+
+    <!-- Slide Indicator -->
+    <div class="slide-indicator" id="slideIndicator"></div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 19;
+
+        // Initialize presentation
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                createSlideIndicators();
+                showSlide(1);
+                
+                // Initialize charts
+                setTimeout(() => {
+                    if (typeof Chart !== 'undefined') {
+                        initializeCharts();
+                    }
+                }, 100);
+                
+                // Keyboard navigation
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'ArrowRight' || e.key === ' ') {
+                        e.preventDefault();
+                        changeSlide(1);
+                    } else if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        changeSlide(-1);
+                    }
+                });
+                
+                // Add fade-in class to elements
+                const elements = document.querySelectorAll('.content-card, .stat-item, .company-card, .regional-card, .challenge-card, .timeline-item');
+                elements.forEach(element => {
+                    element.classList.add('fade-in');
+                });
+                
+            } catch (e) {
+                // Silent fail
+            }
+        });
+
+        function createSlideIndicators() {
+            const indicator = document.getElementById('slideIndicator');
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'indicator-dot';
+                dot.onclick = () => showSlide(i);
+                indicator.appendChild(dot);
+            }
+        }
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.indicator-dot');
+            
+            if (n > totalSlides) currentSlide = 1;
+            if (n < 1) currentSlide = totalSlides;
+            else currentSlide = n;
+            
+            // Hide all slides
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // Show current slide
+            slides[currentSlide - 1].classList.add('active');
+            
+            // Update indicators
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index + 1 === currentSlide);
+            });
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+            
+            // Animate slide content
+            const currentSlideElement = slides[currentSlide - 1];
+            if (currentSlideElement) {
+                const fadeElements = currentSlideElement.querySelectorAll('.fade-in');
+                fadeElements.forEach((element, index) => {
+                    element.classList.remove('visible');
+                    setTimeout(() => {
+                        element.classList.add('visible');
+                    }, index * 200);
+                });
+                
+                // Initialize charts for current slide
+                setTimeout(() => {
+                    if (currentSlide === 17) {
+                        initializeROIChart();
+                    } else {
+                        initializeCharts();
+                    }
+                }, 300);
+            }
+        }
+
+        function changeSlide(n) {
+            showSlide(currentSlide + n);
+        }
+
+        function initializeROIChart() {
+            const roiCtx = document.getElementById('roiChart');
+            if (roiCtx && roiCtx.getContext) {
+                try {
+                    // Clear existing chart if any
+                    if (roiCtx.chart) {
+                        roiCtx.chart.destroy();
+                    }
+                    
+                    roiCtx.chart = new Chart(roiCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['5年以内', '6-10年', '10年以上', '不明'],
+                            datasets: [{
+                                label: '企業回答割合（%）',
+                                data: [43, 47, 7, 3],
+                                backgroundColor: ['#48bb78', '#ed8936', '#f56565', '#a0aec0'],
+                                borderRadius: 4,
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    enabled: true,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.parsed.y + '%';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 50,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value + '%';
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: '企業回答割合（%）'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'ROI実現期間'
+                                    }
+                                }
+                            },
+                            layout: {
+                                padding: {
+                                    top: 20,
+                                    bottom: 20
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('ROI Chart initialization failed:', e);
+                }
+            }
+        }
+
+        function initializeCharts() {
+            // Market Growth Chart with Government Strategy
+            const marketCtx = document.getElementById('marketGrowthChart');
+            if (marketCtx && marketCtx.getContext) {
+                try {
+                    new Chart(marketCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['2024', '2025', '2027', '2030', '2035'],
+                            datasets: [{
+                                label: 'SDV市場規模（兆ドル）',
+                                data: [0.21, 0.35, 0.7, 1.24, 1.8],
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }, {
+                                label: '日系シェア30%目標',
+                                data: [null, null, null, 0.37, 0.54],
+                                borderColor: '#48bb78',
+                                backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                                borderWidth: 3,
+                                borderDash: [5, 5],
+                                fill: false,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: '市場規模（兆ドル）'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // AI Technology Comparison Chart
+            const aiTechCtx = document.getElementById('aiTechnologyChart');
+            if (aiTechCtx && aiTechCtx.getContext) {
+                try {
+                    new Chart(aiTechCtx, {
+                        type: 'radar',
+                        data: {
+                            labels: ['技術成熟度', '実装スピード', '安全性', 'コスト効率', '拡張性', '市場展開'],
+                            datasets: [{
+                                label: 'ルールベース（日本）',
+                                data: [90, 60, 95, 70, 75, 65],
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                                borderWidth: 2
+                            }, {
+                                label: 'E2E AI（米中）',
+                                data: [75, 95, 70, 85, 90, 85],
+                                borderColor: '#f56565',
+                                backgroundColor: 'rgba(245, 101, 101, 0.2)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    max: 100
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // Semiconductor Market Chart
+            const semiconductorCtx = document.getElementById('semiconductorChart');
+            if (semiconductorCtx && semiconductorCtx.getContext) {
+                try {
+                    new Chart(semiconductorCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['2023', '2025', '2027', '2030'],
+                            datasets: [{
+                                label: '車載半導体市場（億ドル）',
+                                data: [770, 900, 1100, 1303],
+                                borderColor: '#ed8936',
+                                backgroundColor: 'rgba(237, 137, 54, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }, {
+                                label: '日本の生産基盤強化',
+                                data: [50, 150, 300, 500],
+                                borderColor: '#48bb78',
+                                backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                                borderWidth: 3,
+                                fill: false,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: '規模（億ドル）'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // Collaboration Areas Chart
+            const collaborationCtx = document.getElementById('collaborationChart');
+            if (collaborationCtx && collaborationCtx.getContext) {
+                try {
+                    new Chart(collaborationCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['自動運転AI', 'オープンデータセット', 'API標準化', 'サイバーセキュリティ', 'シミュレーション'],
+                            datasets: [{
+                                data: [30, 25, 20, 15, 10],
+                                backgroundColor: ['#667eea', '#48bb78', '#ed8936', '#f56565', '#4299e1'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right'
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // Regional SDV Penetration Chart
+            const regionalCtx = document.getElementById('regionalChart');
+            if (regionalCtx && regionalCtx.getContext) {
+                try {
+                    new Chart(regionalCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['中国', '欧州', '北米', '日本', '韓国', 'ASEAN'],
+                            datasets: [{
+                                label: '2030年SDV普及率（%）',
+                                data: [95, 54, 37, 50, 45, 30],
+                                backgroundColor: ['#f56565', '#4299e1', '#48bb78', '#667eea', '#ed8936', '#9f7aea'],
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: '普及率（%）'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // Business Model Evolution Chart
+            const businessCtx = document.getElementById('businessModelChart');
+            if (businessCtx && businessCtx.getContext) {
+                try {
+                    new Chart(businessCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['2024', '2026', '2028', '2030', '2032'],
+                            datasets: [{
+                                label: '保険データ販売',
+                                data: [50, 120, 200, 280, 350],
+                                borderColor: '#4299e1',
+                                backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                                borderWidth: 2,
+                                fill: false
+                            }, {
+                                label: 'インフラデータ',
+                                data: [20, 80, 150, 240, 320],
+                                borderColor: '#48bb78',
+                                backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                                borderWidth: 2,
+                                fill: false
+                            }, {
+                                label: 'エンターテインメント',
+                                data: [10, 40, 90, 160, 250],
+                                borderColor: '#ed8936',
+                                backgroundColor: 'rgba(237, 137, 54, 0.1)',
+                                borderWidth: 2,
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: '収益（ドル/台/年）'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // Security Threats Chart
+            const securityCtx = document.getElementById('securityChart');
+            if (securityCtx && securityCtx.getContext) {
+                try {
+                    new Chart(securityCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['サプライチェーン', 'サードパーティ統合', '車両ハイジャック', 'データ漏洩', 'DoS攻撃'],
+                            datasets: [{
+                                label: '脆弱性報告件数',
+                                data: [1564, 308, 295, 156, 89],
+                                backgroundColor: '#f56565',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: '報告件数'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // Data Utilization Schedule Chart
+            const dataUtilCtx = document.getElementById('dataUtilizationChart');
+            if (dataUtilCtx && dataUtilCtx.getContext) {
+                try {
+                    new Chart(dataUtilCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['自動車LCA', 'SC強靭化', '物流効率化', 'MSP構想', 'オープンデータセット'],
+                            datasets: [{
+                                label: '2025年度実証',
+                                data: [100, 80, 60, 40, 100],
+                                backgroundColor: '#48bb78'
+                            }, {
+                                label: '2026年度展開',
+                                data: [80, 100, 100, 70, 80],
+                                backgroundColor: '#667eea'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: '進捗率（%）'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+                
